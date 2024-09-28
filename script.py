@@ -9,7 +9,7 @@ def getLocation(name):
 def getOrLoadMap(name):
     if os.path.isfile("maps/" + name):
         return ox.load_graphml("maps/" + name)
-    G = ox.graph_from_place(name, network_type="bike")
+    G = ox.graph_from_place(name, network_type="all", simplify=False)
     ox.save_graphml(G, "maps/" + name)
     return G
 
@@ -24,15 +24,15 @@ def lengthBetweenNodes(fromNode, toNode):
 
 def weightFun(fromNode, toNode, dicts):
     banned = ['motorway', 'trunk', 'primary', 'motorway_link', 'trunk_link', 'bus_guideway', 'busway']
-    return None if dicts.get('highway', '') in banned and dicts.get('length', lengthBetweenNodes(fromNode, toNode)) > 100 else dicts.get('length', lengthBetweenNodes(fromNode, toNode))
+    return None if dicts.get('highway', '') in banned and dicts.get('length', lengthBetweenNodes(fromNode, toNode)) > 10 else dicts.get('length', lengthBetweenNodes(fromNode, toNode))
 
-G = getOrLoadMap("Kraków, Poland")#str(input("Pass map: ")))
+G = getOrLoadMap(input("Pass map: "))
 #fig, ax = ox.plot_graph(G, node_color="r")
 
 while True:
     print("-----------")
-    nodeA = ox.distance.nearest_nodes(G, *getLocation("TAURON Arena Kraków"))#input("Pass first loc: ")))
-    nodeB = ox.distance.nearest_nodes(G, *getLocation("M1 Kraków"))#input("Pass second loc: ")))
+    nodeA = ox.distance.nearest_nodes(G, *getLocation(input("Pass first loc: ")))
+    nodeB = ox.distance.nearest_nodes(G, *getLocation(input("Pass second loc: ")))
     nodes = nx.astar_path(G, nodeA, nodeB, weight=weightFun)
 #    for node in nodes:
 #        print(G[node])
