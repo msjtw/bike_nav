@@ -11,3 +11,4 @@ nodeB = ox.distance.nearest_nodes(G, 16.97167, 52.75430)
 nodes = nx.astar_path(G, nodeA, nodeB, weight="length")
 ox.plot_graph_route(G, nodes, 'r')
 
+
