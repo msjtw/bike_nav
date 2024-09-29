@@ -1,8 +1,10 @@
 import 'package:bike_nav/providers/city_provider.dart';
+import 'package:bike_nav/providers/tracking_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
-import 'package:geocoding/geocoding.dart';
+import 'services/navigation_prompt.dart';
+import 'test_route.dart';
 
 void main() {
   runApp(
@@ -41,13 +43,7 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   final searchControler = TextEditingController();
   MapController controller = MapController(
-    initPosition: GeoPoint(latitude: 47.4358055, longitude: 8.4737324),
-    areaLimit: BoundingBox(
-      east: 10.4922941,
-      north: 47.8084648,
-      south: 45.817995,
-      west: 5.9559113,
-    ),
+    initPosition: GeoPoint(latitude: 52.4, longitude: 17),
   );
 
   @override
@@ -81,37 +77,77 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
         ],
       ),
+      floatingActionButton: Wrap(
+        direction: Axis.vertical,
+        children: [
+          Container(
+            margin: const EdgeInsets.all(10),
+            child: FloatingActionButton(
+                child: const Icon(Icons.navigation),
+                onPressed: () async {
+                  await newNav(context);
+                  controller.drawRoadManually(
+                      waypointList,
+                      const RoadOption(
+                          roadColor: Colors.blue,
+                          roadWidth: 15,
+                          zoomInto: true));
+                }),
+          ),
+          Container(
+            margin: const EdgeInsets.all(10),
+            child: Builder(
+              builder: (BuildContext context) {
+                if (ref.watch(trackingProvider) == 1) {
+                  return FloatingActionButton(
+                      child: const Icon(Icons.location_on),
+                      onPressed: () async {
+                        await controller.startLocationUpdating();
+                        await controller.setZoom(zoomLevel: 14);
+                        ref.read(trackingProvider.notifier).toggle();
+                      });
+                } else {
+                  return FloatingActionButton(
+                      child: const Icon(Icons.location_off),
+                      onPressed: () async {
+                        await controller.stopLocationUpdating();
+                        await controller.setZoom(zoomLevel: 17);
+                        ref.read(trackingProvider.notifier).toggle();
+                      });
+                }
+              },
+            ),
+          ),
+        ],
+      ),
       body: Center(
         child: OSMFlutter(
           controller: controller,
           osmOption: OSMOption(
-            userTrackingOption: UserTrackingOption(
+            userTrackingOption: const UserTrackingOption(
               enableTracking: true,
               unFollowUser: false,
             ),
-            zoomOption: ZoomOption(
-              initZoom: 8,
-              minZoomLevel: 3,
-              maxZoomLevel: 19,
-              stepZoom: 1.0,
-            ),
             userLocationMarker: UserLocationMaker(
-              personMarker: MarkerIcon(
+              personMarker: const MarkerIcon(
                 icon: Icon(
                   Icons.location_history_rounded,
                   color: Colors.red,
                   size: 48,
                 ),
               ),
-              directionArrowMarker: MarkerIcon(
+              directionArrowMarker: const MarkerIcon(
                 icon: Icon(
-                  Icons.double_arrow,
+                  Icons.assistant_navigation,
                   size: 48,
                 ),
               ),
             ),
-            roadConfiguration: RoadOption(
-              roadColor: Colors.yellowAccent,
+            zoomOption: const ZoomOption(
+              initZoom: 10,
+              minZoomLevel: 2,
+              maxZoomLevel: 19,
+              stepZoom: 1.0,
             ),
           ),
         ),
