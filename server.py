@@ -11,5 +11,5 @@ async def root():
 
 
 @app.get("/path/")
-def path(city: str, start: str, end: str) -> list[list[float]]:
-    return getPath(city, start, end)
+def path(city: str, start: str, end: str) -> dict[str, list[list[float]]]:
+    return {"path": getPath(city, start, end)}
