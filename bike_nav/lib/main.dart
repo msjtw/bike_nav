@@ -58,6 +58,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final pointList = ref.watch(navProvider);
     return Scaffold(
       appBar: AppBar(
         title: TextField(
@@ -90,13 +91,14 @@ class _HomePageState extends ConsumerState<HomePage> {
                     if (vals != null) {
                       ref.read(navProvider.notifier).setNav(vals[0], vals[1]);
                     }
-                  });
-                  controller.drawRoadManually(
-                      waypointList,
+                    controller.drawRoadManually(
+                      pointList.wayPoints,
                       const RoadOption(
                           roadColor: Colors.blue,
                           roadWidth: 15,
-                          zoomInto: true));
+                          zoomInto: true),
+                    );
+                  });
                 }),
           ),
           Container(

@@ -12,4 +12,5 @@ async def root():
 
 @app.get("/path/")
 def path(city: str, start: str, end: str) -> dict[str, list[list[float]]]:
+    print("yo. mr white")
     return {"path": getPath(city, start, end)}
