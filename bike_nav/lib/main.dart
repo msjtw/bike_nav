@@ -1,4 +1,5 @@
 import 'package:bike_nav/providers/city_provider.dart';
+import 'package:bike_nav/providers/nav_provider.dart';
 import 'package:bike_nav/providers/tracking_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -85,7 +86,11 @@ class _HomePageState extends ConsumerState<HomePage> {
             child: FloatingActionButton(
                 child: const Icon(Icons.navigation),
                 onPressed: () async {
-                  await newNav(context);
+                  newNav(context).then((vals) {
+                    if (vals != null) {
+                      ref.read(navProvider.notifier).setNav(vals[0], vals[1]);
+                    }
+                  });
                   controller.drawRoadManually(
                       waypointList,
                       const RoadOption(
