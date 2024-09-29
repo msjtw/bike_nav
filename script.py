@@ -12,7 +12,6 @@ def getLocation(name):
     y,x = ox.geocode(name)
     return x, y
 
-
 def getOrLoadMap(name) -> MultiDiGraph:
     if os.path.isfile("maps/" + name):
         return ox.load_graphml("maps/" + name)
