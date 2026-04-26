@@ -4,161 +4,179 @@ import 'package:bike_nav/providers/tracking_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'services/navigation_prompt.dart';
-import 'test_route.dart';
 
 void main() {
-  runApp(
-    // To install Riverpod, we need to add this widget above everything else.
-    // This should not be inside "MyApp" but as direct parameter to "runApp".
-    const ProviderScope(
-      child: MyApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const HomePage(),
+    return const MaterialApp(
+      home: ChooseRoute(),
     );
   }
 }
 
-class HomePage extends ConsumerStatefulWidget {
-  const HomePage({super.key});
+class ChooseRoute extends StatefulWidget {
+  const ChooseRoute({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _HomePageState();
+  State<ChooseRoute> createState() => _ChooseRouteState();
 }
 
-class _HomePageState extends ConsumerState<HomePage> {
-  final searchControler = TextEditingController();
-  MapController controller = MapController(
-    initPosition: GeoPoint(latitude: 52.4, longitude: 17),
-  );
+class _ChooseRouteState extends State<ChooseRoute> {
+  final List<TextEditingController> controllers = [
+    TextEditingController(), // From
+    TextEditingController(), // To
+  ];
 
   @override
   void dispose() {
-    // Clean up the controller when the widget is removed from the
-    // widget tree.
-    controller.dispose();
-    searchControler.dispose();
+    for (var c in controllers) {
+      c.dispose();
+    }
     super.dispose();
+  }
+
+  void addStop() {
+    setState(() {
+      // insert before last ("To")
+      controllers.insert(
+        controllers.length - 1,
+        TextEditingController(),
+      );
+    });
+  }
+
+  void removeStop(int index) {
+    if (index == 0 || index == controllers.length - 1) return;
+
+    setState(() {
+      controllers[index].dispose();
+      controllers.removeAt(index);
+    });
+  }
+
+  void _handleSearch() {
+    final stops = controllers.map((c) => c.text).toList();
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ResultScreen(
+          waypoints: stops,
+        ),
+      ),
+    );
+  }
+
+  String getLabel(int index) {
+    if (index == 0) return 'From';
+    if (index == controllers.length - 1) return 'To';
+    return 'Stop ${index}';
   }
 
   @override
   Widget build(BuildContext context) {
-    final pointList = ref.watch(navProvider);
     return Scaffold(
       appBar: AppBar(
-        title: TextField(
-          controller: searchControler,
-        ),
+        title: const Text('Choose Route'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search),
-            tooltip: 'Search',
-            onPressed: () async {
-              ref.read(cityProvider.notifier).setCity(searchControler.text);
-              await controller.moveTo(
-                  GeoPoint(
-                      latitude: ref.read(cityProvider).lat,
-                      longitude: ref.read(cityProvider).lon),
-                  animate: true);
-            },
+            icon: const Icon(Icons.add),
+            onPressed: addStop,
           ),
         ],
       ),
-      floatingActionButton: Wrap(
-        direction: Axis.vertical,
-        children: [
-          Container(
-            margin: const EdgeInsets.all(10),
-            child: FloatingActionButton(
-                child: const Icon(Icons.navigation),
-                onPressed: () async {
-                  newNav(context).then((vals) {
-                    if (vals != null) {
-                      ref.read(navProvider.notifier).setNav(vals[0], vals[1]);
-                    }
-                    controller.drawRoadManually(
-                      pointList.wayPoints,
-                      const RoadOption(
-                          roadColor: Colors.blue,
-                          roadWidth: 15,
-                          zoomInto: true),
-                    );
-                  });
-                }),
-          ),
-          Container(
-            margin: const EdgeInsets.all(10),
-            child: Builder(
-              builder: (BuildContext context) {
-                if (ref.watch(trackingProvider) == 1) {
-                  return FloatingActionButton(
-                      child: const Icon(Icons.location_on),
-                      onPressed: () async {
-                        await controller.startLocationUpdating();
-                        await controller.setZoom(zoomLevel: 14);
-                        ref.read(trackingProvider.notifier).toggle();
-                      });
-                } else {
-                  return FloatingActionButton(
-                      child: const Icon(Icons.location_off),
-                      onPressed: () async {
-                        await controller.stopLocationUpdating();
-                        await controller.setZoom(zoomLevel: 17);
-                        ref.read(trackingProvider.notifier).toggle();
-                      });
-                }
-              },
-            ),
-          ),
-        ],
-      ),
-      body: Center(
-        child: OSMFlutter(
-          controller: controller,
-          osmOption: OSMOption(
-            userTrackingOption: const UserTrackingOption(
-              enableTracking: true,
-              unFollowUser: false,
-            ),
-            userLocationMarker: UserLocationMaker(
-              personMarker: const MarkerIcon(
-                icon: Icon(
-                  Icons.location_history_rounded,
-                  color: Colors.red,
-                  size: 48,
-                ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: controllers.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: controllers[index],
+                            decoration: InputDecoration(
+                              labelText: getLabel(index),
+                              border: const OutlineInputBorder(),
+                            ),
+                          ),
+                        ),
+                        if (index != 0 && index != controllers.length - 1)
+                          IconButton(
+                            icon: const Icon(Icons.remove),
+                            onPressed: () => removeStop(index),
+                          ),
+                      ],
+                    ),
+                  );
+                },
               ),
-              directionArrowMarker: const MarkerIcon(
-                icon: Icon(
-                  Icons.assistant_navigation,
-                  size: 48,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _handleSearch,
+                  child: const Text("Search Route"),
                 ),
               ),
             ),
-            zoomOption: const ZoomOption(
-              initZoom: 10,
-              minZoomLevel: 2,
-              maxZoomLevel: 19,
-              stepZoom: 1.0,
-            ),
-          ),
+          ],
         ),
       ),
+    );
+  }
+}
+
+class ResultScreen extends StatelessWidget {
+  final List<String> waypoints;
+
+  const ResultScreen({
+    super.key,
+    required this.waypoints,
+  });
+
+  Widget getLabel(int index) {
+    if (index == 0 || index == waypoints.length - 1) {
+      return ListTile(
+        leading: Icon(Icons.agriculture_sharp),
+        visualDensity: const VisualDensity(vertical: -4),
+        title: Text(
+            style: TextStyle(fontWeight: FontWeight.bold), waypoints[index]),
+      );
+    }
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 0),
+      visualDensity: const VisualDensity(vertical: -4),
+      leading: Icon(Icons.more_vert),
+      title: Text(waypoints[index]),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Route Result')),
+      body: Center(
+          child: ListView.builder(
+              itemCount: waypoints.length,
+              itemBuilder: (BuildContext cntx, int index) {
+                return getLabel(index);
+              })),
     );
   }
 }

@@ -9,7 +9,7 @@ from osmnx import distance  # it has weird imports
 
 
 def getLocation(name):
-    y,x = ox.geocode(name)
+    y, x = ox.geocode(name)
     return x, y
 
 
@@ -53,7 +53,7 @@ def getPath(city: str, start: str, end: str) -> list[list[float]]:
     G = getOrLoadMap(city)
     nodeA = distance.nearest_nodes(G, *getLocation(start))
     nodeB = distance.nearest_nodes(G, *getLocation(end))
-    nodes = nx.astar_path(G, nodeA, nodeB, weight=partial(weightFun, G)) # type: ignore
+    nodes = nx.astar_path(G, nodeA, nodeB, weight=partial(weightFun, G))  # type: ignore
     path: list[list[float]] = []
     for node in nodes:
         x, y = G.nodes[node]["x"], G.nodes[node]["y"]
@@ -64,11 +64,11 @@ def getPath(city: str, start: str, end: str) -> list[list[float]]:
 def main():
     while True:
         G = getOrLoadMap(input("Pass map: "))
-        #fig, ax = ox.plot_graph(G, node_color="r")
+        # fig, ax = ox.plot_graph(G, node_color="r")
         print("-----------")
         nodeA = distance.nearest_nodes(G, *getLocation(input("Pass first loc: ")))
         nodeB = distance.nearest_nodes(G, *getLocation(input("Pass second loc: ")))
-        nodes = nx.astar_path(G, nodeA, nodeB, weight=partial(weightFun, G)) # type: ignore
+        nodes = nx.astar_path(G, nodeA, nodeB, weight=partial(weightFun, G))  # type: ignore
         for node in nodes:
             x, y = G.nodes[node]["x"], G.nodes[node]["y"]
             print([x, y], end=", ")

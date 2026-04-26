@@ -5,7 +5,11 @@ import 'package:geocoding/geocoding.dart';
 class CityNotifier extends Notifier<City> {
   @override
   City build() {
-    return const City(name: "", lon: 0, lat: 0);
+    return const City(
+      name: "Poznań",
+      lon: 16.9252,
+      lat: 52.4064,
+    );
   }
 
   void setCity(String name) async {

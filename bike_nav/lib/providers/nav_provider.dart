@@ -13,24 +13,37 @@ class NavNotifier extends Notifier<Navigation> {
   }
 
   void setNav(String start, String end) async {
-    print(start);
-    print(end);
-    var tmp = Uri.http('10.0.2.2:8000', '/path/', {
-      "city": ref.read(cityProvider).name,
-      "start": start,
-      "end": end,
-    });
-    final response = await http.get(tmp);
+    try {
+      print("setNav start");
 
-    final List<GeoPoint> wayPoints = (jsonDecode(response.body)['path'] as List)
-        .map((data) => GeoPoint(
-            latitude: (data[1] as num)
-                .toDouble(), // Ensure the value is cast to double
-            longitude: (data[0] as num)
-                .toDouble() // Ensure the value is cast to double
-            ))
-        .toList();
-    state = Navigation(start: start, end: end, wayPoints: wayPoints);
+      final uri = Uri(
+        scheme: 'http',
+        host: '192.168.1.102',
+        port: 5000,
+        path: '/path/',
+        queryParameters: {
+          "city": ref.read(cityProvider).name,
+          "start": start,
+          "end": end,
+        },
+      );
+
+      final response = await http.get(uri).timeout(const Duration(seconds: 10));
+
+      print(response.body);
+
+      final List<GeoPoint> wayPoints =
+          (jsonDecode(response.body)['path'] as List)
+              .map((data) => GeoPoint(
+                    latitude: (data[1] as num).toDouble(),
+                    longitude: (data[0] as num).toDouble(),
+                  ))
+              .toList();
+
+      state = Navigation(start: start, end: end, wayPoints: wayPoints);
+    } catch (e) {
+      print("setNav error: $e");
+    }
   }
 }
 
