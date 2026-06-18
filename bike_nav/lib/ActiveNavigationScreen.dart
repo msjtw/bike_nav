@@ -27,8 +27,6 @@ class _ActiveNavigationScreenState
   int _nextPointIndex = 1;
   bool _isTracking = false;
 
-  // Track navigation state (In production, wire this to a Riverpod provider
-  // calculating distances dynamically from GPS updates)
   String _nextDirectionText = "Turn left onto Bike Path";
   String _distanceRemaining = "250 m";
   IconData _directionIcon = Icons.turn_left;
@@ -140,9 +138,7 @@ class _ActiveNavigationScreenState
     try {
       await controller.rotateMapCamera(bearing);
       await controller.moveTo(currentLocation, animate: false);
-    } catch (_) {
-      // Ignore if the map controller is not ready yet or disposed.
-    }
+    } catch (_) {}
 
     if (mounted) {
       setState(() {
@@ -206,65 +202,63 @@ class _ActiveNavigationScreenState
               ),
             ),
 
-            // 2. Top Banner: Next Direction Instruction
-            Positioned(
-              top: 16,
-              left: 16,
-              right: 16,
-              child: Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                elevation: 8,
-                color: Colors.green.shade700, // Standard navigation green
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      // Direction Arrow Visual Indicator
-                      CircleAvatar(
-                        backgroundColor: Colors.white.withOpacity(0.2),
-                        radius: 24,
-                        child: Icon(
-                          _directionIcon,
-                          color: Colors.white,
-                          size: 28,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      // Text Instruction Content
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              _nextDirectionText,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'In $_distanceRemaining',
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.85),
-                                fontWeight: FontWeight.w500,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+            // Positioned(
+            //   top: 16,
+            //   left: 16,
+            //   right: 16,
+            //   child: Card(
+            //     shape: RoundedRectangleBorder(
+            //       borderRadius: BorderRadius.circular(16),
+            //     ),
+            //     elevation: 8,
+            //     color: Colors.green.shade700, // Standard navigation green
+            //     child: Padding(
+            //       padding: const EdgeInsets.all(16.0),
+            //       child: Row(
+            //         children: [
+            //           // Direction Arrow Visual Indicator
+            //           CircleAvatar(
+            //             backgroundColor: Colors.white.withOpacity(0.2),
+            //             radius: 24,
+            //             child: Icon(
+            //               _directionIcon,
+            //               color: Colors.white,
+            //               size: 28,
+            //             ),
+            //           ),
+            //           const SizedBox(width: 16),
+            //           // Text Instruction Content
+            //           Expanded(
+            //             child: Column(
+            //               crossAxisAlignment: CrossAxisAlignment.start,
+            //               mainAxisSize: MainAxisSize.min,
+            //               children: [
+            //                 Text(
+            //                   _nextDirectionText,
+            //                   style: const TextStyle(
+            //                     color: Colors.white,
+            //                     fontWeight: FontWeight.bold,
+            //                     fontSize: 18,
+            //                   ),
+            //                 ),
+            //                 const SizedBox(height: 4),
+            //                 Text(
+            //                   'In $_distanceRemaining',
+            //                   style: TextStyle(
+            //                     color: Colors.white.withOpacity(0.85),
+            //                     fontWeight: FontWeight.w500,
+            //                     fontSize: 14,
+            //                   ),
+            //                 ),
+            //               ],
+            //             ),
+            //           ),
+            //         ],
+            //       ),
+            //     ),
+            //   ),
+            // ),
 
-            // 3. Bottom Banner: Journey Status Layout
             Positioned(
               bottom: 24,
               left: 16,

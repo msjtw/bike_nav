@@ -12,14 +12,12 @@ class SearchHistoryNotifier extends AsyncNotifier<List<String>> {
     final userId = pb.authStore.record?.id;
     if (userId == null) return [];
 
-    // Pass the userId down so we only query this specific account's rows
     final initialList = await _fetchFromDatabase(userId);
 
     pb.collection('search_history').subscribe('*', (e) {
       final record = e.record;
       if (record == null) return;
 
-      // FIX: Ignore real-time websocket signals belonging to other accounts
       if (record.getStringValue('user') != userId) return;
 
       final query = record.getStringValue('query');

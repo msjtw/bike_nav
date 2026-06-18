@@ -93,7 +93,6 @@ class _ChooseRouteState extends ConsumerState<ChooseRoute> {
   void _resetInputFields() {
     _clearAllFocus();
     setState(() {
-      // Keep only two main text boxes (From & To) and wipe their contents
       while (controllers.length > 2) {
         controllers[1].dispose();
         controllers.removeAt(1);
@@ -226,10 +225,8 @@ class _ChooseRouteState extends ConsumerState<ChooseRoute> {
     final city = ref.watch(locationProvider);
     final historyAsync = ref.watch(searchHistoryProvider);
 
-    // Wipe fields reactively if authentication changes or clears out entirely
     ref.listen<AsyncValue<AuthStoreEvent>>(authStateProvider, (previous, next) {
       next.whenData((event) {
-        // Now 'event' is safely unwrapped as a real AuthStoreEvent
         if (event.token.isEmpty) {
           _resetInputFields();
         }
@@ -283,18 +280,15 @@ class _ChooseRouteState extends ConsumerState<ChooseRoute> {
                 accountName: Text(
                   isLoggedIn
                       ? (() {
-                          // 1. Try to get the "name" field using PocketBase's official getter
                           final name =
                               pb.authStore.record?.getStringValue('name') ?? '';
                           if (name.trim().isNotEmpty) return name;
 
-                          // 2. Fallback to username if name is empty or unconfigured
                           final username =
                               pb.authStore.record?.getStringValue('username') ??
                                   '';
                           if (username.trim().isNotEmpty) return username;
 
-                          // 3. Last resort fallback
                           return 'Rider Account';
                         })()
                       : 'Guest Account',

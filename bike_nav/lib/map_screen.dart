@@ -48,7 +48,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     );
   }
 
-  // Formatting helpers for OSRM data
   String _formatDistance(double meters) {
     if (meters < 1000) {
       return '${meters.toStringAsFixed(0)} m';
@@ -104,7 +103,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Route Result')),
-      // The FAB appears dynamically once a route option is ready
       floatingActionButton: routes.isNotEmpty
           ? FloatingActionButton.extended(
               onPressed: () {
@@ -185,8 +183,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                       ),
                     ),
                   ),
-
-                // Route Information Panel
                 if (currentRoute != null)
                   Card(
                     margin: const EdgeInsets.all(12),
@@ -225,7 +221,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                       ),
                     ),
                   ),
-
                 Expanded(
                   child: OSMFlutter(
                     controller: controller,
